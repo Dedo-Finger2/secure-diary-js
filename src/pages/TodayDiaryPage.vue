@@ -40,6 +40,10 @@ async function saveChanges() {
 
     if (response.status === 200 || response.status === 201) {
       alert("Changes saved.");
+      const oldContent = atob(atob(todayDiary.value.content));
+      const currentContent = todayDiaryContent.value;
+      const newContent = currentContent.split(oldContent)[1];
+      localStorage.setItem("cachedTodayDiaryContent", btoa(btoa(newContent)));
     }
 
     return;
@@ -49,8 +53,6 @@ async function saveChanges() {
 }
 
 async function toggleContent() {
-  isContentRevealed.value = isContentRevealed.value ? false : true;
-
   if (isContentRevealed.value) {
     todayDiaryContent.value = atob(atob(todayDiaryContent.value));
     isEditingDisabled.value = false;
@@ -115,12 +117,21 @@ async function createTodayDiary() {
 }
 
 onMounted(async () => {
+  const cachedTodayDiaryContent = localStorage.getItem(
+    "cachedTodayDiaryContent",
+  );
   todayDiary.value = await getTodayDiary();
-  todayDiaryContent.value = todayDiary.value.content;
   if (todayDiary.value === null) {
     todayDiary.value = await createTodayDiary();
-    todayDiaryContent.value = todayDiary.value.content;
   }
+  if (cachedTodayDiaryContent) {
+    todayDiary.value.content = btoa(
+      btoa(
+        `${atob(atob(todayDiary.value.content))}${atob(atob(cachedTodayDiaryContent))}`,
+      ),
+    );
+  }
+  todayDiaryContent.value = todayDiary.value.content;
 });
 </script>
 
@@ -133,7 +144,7 @@ onMounted(async () => {
       <label for="reveal-content">Reveal Content</label>
       <input
         v-on:change="toggleContent"
-        v-bind="isContentRevealed"
+        v-model="isContentRevealed"
         type="checkbox"
         name="revealContent"
         id="reveal-content"
