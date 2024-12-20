@@ -30,8 +30,8 @@ async function saveChanges() {
           email: userData.email,
         },
         content: isEditingDisabled.value
-          ? todayDiaryContent.value
-          : btoa(todayDiaryContent.value),
+          ? btoa(todayDiaryContent.value)
+          : btoa(btoa(todayDiaryContent.value)),
         headers: {
           "X-GitHub-Api-Version": "2022-11-28",
         },
@@ -52,10 +52,10 @@ async function toggleContent() {
   isContentRevealed.value = isContentRevealed.value ? false : true;
 
   if (isContentRevealed.value) {
-    todayDiaryContent.value = atob(todayDiaryContent.value);
+    todayDiaryContent.value = atob(atob(todayDiaryContent.value));
     isEditingDisabled.value = false;
   } else {
-    todayDiaryContent.value = btoa(todayDiaryContent.value);
+    todayDiaryContent.value = btoa(btoa(todayDiaryContent.value));
     isEditingDisabled.value = true;
   }
 }
@@ -147,7 +147,13 @@ onMounted(async () => {
         id="diary-content"
       ></textarea>
 
-      <button v-on:click="saveChanges" type="button">Save Changes</button>
+      <button
+        :disabled="isEditingDisabled"
+        v-on:click="saveChanges"
+        type="button"
+      >
+        Save Changes
+      </button>
     </div>
   </section>
 </template>
