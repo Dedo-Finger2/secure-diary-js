@@ -125,11 +125,17 @@ onMounted(async () => {
     todayDiary.value = await createTodayDiary();
   }
   if (cachedTodayDiaryContent) {
-    todayDiary.value.content = btoa(
-      btoa(
-        `${atob(atob(todayDiary.value.content))}${atob(atob(cachedTodayDiaryContent))}`,
-      ),
-    );
+    const decryptedTodayDiaryContent = atob(atob(todayDiary.value.content));
+    const decrytedCachedTodayDiaryContent = atob(atob(cachedTodayDiaryContent));
+    if (!decryptedTodayDiaryContent.includes(decrytedCachedTodayDiaryContent)) {
+      todayDiary.value.content = btoa(
+        btoa(
+          `${atob(atob(todayDiary.value.content))}${atob(atob(cachedTodayDiaryContent))}`,
+        ),
+      );
+    } else {
+      localStorage.removeItem("cachedTodayDiaryContent");
+    }
   }
   todayDiaryContent.value = todayDiary.value.content;
 });
