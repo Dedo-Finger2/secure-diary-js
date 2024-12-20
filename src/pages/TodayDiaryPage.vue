@@ -11,6 +11,43 @@ const isContentRevealed = ref(false);
 const todayDiaryContent = ref(null);
 const isEditingDisabled = ref(true);
 
+async function saveChanges() {
+  try {
+    const octokit = new Octokit({
+      auth: userData.apiKey,
+    });
+
+    const response = await octokit.request(
+      "PUT /repos/{owner}/{repo}/contents/{path}",
+      {
+        owner: userData.username,
+        repo: userData.repositoryName,
+        path: todayDiaryTitle,
+        sha: todayDiary.value.sha,
+        message: "updated today's diary",
+        committer: {
+          name: userData.username,
+          email: userData.email,
+        },
+        content: isEditingDisabled.value
+          ? todayDiaryContent.value
+          : btoa(todayDiaryContent.value),
+        headers: {
+          "X-GitHub-Api-Version": "2022-11-28",
+        },
+      },
+    );
+
+    if (response.status === 200 || response.status === 201) {
+      alert("Changes saved.");
+    }
+
+    return;
+  } catch (err) {
+    console.error(err);
+  }
+}
+
 async function toggleContent() {
   isContentRevealed.value = isContentRevealed.value ? false : true;
 
@@ -109,6 +146,8 @@ onMounted(async () => {
         name="diary-content"
         id="diary-content"
       ></textarea>
+
+      <button v-on:click="saveChanges" type="button">Save Changes</button>
     </div>
   </section>
 </template>
